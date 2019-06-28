@@ -1,77 +1,88 @@
 import os
 import shutil
+from pathlib import Path, PurePosixPath
+import argparse
 
-# print (os.getcwd())
+parser = argparse.ArgumentParser(
+    description='Moves files from a specified directory into folders organised by type')
+parser.add_argument('-v', '--verbose',
+                    help='increase output verbosity', action="store_true")
+parser.add_argument('-dir', '--directory',
+                    help='Input target directory', default=True)
+parser.add_argument('-fn', '--filename',
+                    help='Input main file name', default=True)
+args = parser.parse_args()
+if args.verbose:
+    print('verbosity turned on')
 
-given_dir = input('Enter the directory path: ')
+given_dir = args.directory
 
-while not os.path.exists(given_dir):
-    print ('Please enter a valid path ')
-    given_dir = input('Enter the directory path: ')
-
-
+if not Path(given_dir).is_dir():
+    print("Invalid directory")
+    quit()
 # to set cwd to the given dir
-if os.getcwd() != given_dir:
-    # print(os.getcwd())
-    print('changing directory to given directory')
-    os.chdir(given_dir)
+if Path.cwd() != given_dir:
+    if args.verbose:
+        print('changing directory to given directory')
+    os.chdir(Path(given_dir))
 
 
 # to create the main folder
-try:
-    os.mkdir('Files')
-except FileExistsError:
-    print('File already exists')
-
-# creating folders
+Path(args.filename).mkdir(parents=True, exist_ok=True)
 
 
+# to create the sub folders:
 def create_folders(folder):
-
-    # to create the sub folders:
-    os.chdir(given_dir + '/Files')
-    # print(os.getcwd())
-
-    try:
-        os.mkdir(folder)
-    except FileExistsError:
-        print('File already exists')
+    os.chdir(given_dir + '/' + args.filename)
+    Path(folder).mkdir(parents=True, exist_ok=True)
 
 
 ext_dict = {}
 
 folders_dict = {'Audio': ['.mp3'], 'Documents': ['.pdf', '.txt', '.xlsx'],
                 'Videos': ['.mp4', '.mkv'], 'Compressed': ['.zip'],
-                'Installation': ['.pkg', 'exe', 'dmg'], 'Miscellaneous': []}
+                'Installation': ['.pkg', '.exe', '.dmg'], 'Miscellaneous': ['other']}
 
 for folder, extentions in folders_dict.items():
-
     create_folders(folder)
-    # print (folder, extentions)
     for extention in extentions:
         ext_dict[extention] = folder
-# print (ext_dict)
 
 
-def segregate(file, name, extention):
-    # print (name)
+def segregate(file, extention):
+    inp_file = Path.cwd().joinpath(file)
+    if args.verbose:
+        print("inp file: ", inp_file)
+
     if extention in ext_dict:
         try:
-            shutil.move(os.path.join(given_dir, file),
-                        os.path.join(given_dir, 'Files/' + ext_dict[extention]))
+
+            out_file = Path.cwd().joinpath(ext_dict[extention])
+            shutil.move(str(inp_file), str(out_file))
+            if args.verbose:
+                print("moved")
+        except FileExistsError:
+            print('File already exists')
+    else:
+        try:
+            print(Path.cwd())
+            out_file = Path.cwd().joinpath(ext_dict['other'])
+            shutil.move(str(inp_file), str(out_file))
+            if args.verbose:
+                print("moved")
         except FileExistsError:
             print('File already exists')
 
 
-# os.chdir('/Users/sheyril/Desktop')
-files_list = os.listdir(given_dir)
-files_list.remove('.DS_Store')
-files_list.remove('Files')
-# print(files_list)
+def get_files(directory):
+    for file in Path(directory).iterdir():
+        print(file)
+        if file.is_file():
+            segregate(file, PurePosixPath(file).suffix)
 
-for file in files_list:
-    name, extention = os.path.splitext(file)
-    # print("this is the name: ", name)
-    # print("this is the extention: ", extention)
-    segregate(file, name, extention)
-print('Done!')
+
+get_files(given_dir)
+
+if args.verbose:
+    print('Done!')
+
