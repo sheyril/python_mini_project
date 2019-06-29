@@ -8,10 +8,10 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-v', '--verbose',
                     help='increase output verbosity', action="store_true")
 parser.add_argument('-d', '--dirrectory',
-                    help='Input target directory, default: current working directory',
+                    help='Input target directory, (default: current working directory)',
                     default=Path.cwd())
 parser.add_argument('-f', '--filename',
-                    help='Input main file name, default: File ',
+                    help='Input main file name, (default: File)',
                     default='File')
 args = parser.parse_args()
 if args.verbose:
@@ -85,5 +85,6 @@ get_files(given_dir)
 
 if args.verbose:
     print('Done!')
+
 
 
