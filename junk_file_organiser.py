@@ -4,13 +4,15 @@ from pathlib import Path, PurePosixPath
 import argparse
 
 parser = argparse.ArgumentParser(
-    description='Moves files from a specified directory into folders organised by type')
+                    description='Moves files from a specified directory into folders organised by type')
 parser.add_argument('-v', '--verbose',
                     help='increase output verbosity', action="store_true")
-parser.add_argument('-dir', '--directory',
-                    help='Input target directory', default=True)
-parser.add_argument('-fn', '--filename',
-                    help='Input main file name', default=True)
+parser.add_argument('-d', '--dirrectory',
+                    help='Input target directory, default: current working directory',
+                    default=Path.cwd())
+parser.add_argument('-f', '--filename',
+                    help='Input main file name, default: File ',
+                    default='File')
 args = parser.parse_args()
 if args.verbose:
     print('verbosity turned on')
@@ -38,7 +40,6 @@ def create_folders(folder):
 
 
 ext_dict = {}
-
 folders_dict = {'Audio': ['.mp3'], 'Documents': ['.pdf', '.txt', '.xlsx'],
                 'Videos': ['.mp4', '.mkv'], 'Compressed': ['.zip'],
                 'Installation': ['.pkg', '.exe', '.dmg'], 'Miscellaneous': ['other']}
@@ -56,7 +57,6 @@ def segregate(file, extention):
 
     if extention in ext_dict:
         try:
-
             out_file = Path.cwd().joinpath(ext_dict[extention])
             shutil.move(str(inp_file), str(out_file))
             if args.verbose:
@@ -85,4 +85,5 @@ get_files(given_dir)
 
 if args.verbose:
     print('Done!')
+
 
